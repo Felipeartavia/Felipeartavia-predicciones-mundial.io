@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pronóstico Mundial 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0a0e14;
+    --night-deep: #060810;
+    --panel: #11161f;
+    --panel-line: #232b38;
+    --pitch: #4ade80;
+    --pitch-dim: #1f3a2a;
+    --amber: #fbbf24;
+    --crowd: #5b6478;
+    --text-hi: #f4f6f9;
+    --text-lo: #8993a8;
+    --draw: #64748b;
+    --away: #f0653e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--night);
+    color: var(--text-hi);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ---------- ambient floodlight glow ---------- */
+  .glow-field {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% -5%, rgba(74,222,128,0.13), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 85% 0%, rgba(251,191,36,0.08), transparent 60%);
+  }
+
+  /* ---------- header ---------- */
+  header {
+    position: relative;
+    z-index: 1;
+    padding: 64px 24px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pitch);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--pitch);
+    box-shadow: 0 0 0 0 rgba(74,222,128,0.6);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(74,222,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  }
+
+  h1 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 8vw, 84px);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  h1 .accent { color: var(--pitch); }
+
+  .subhead {
+    margin-top: 18px;
+    color: var(--text-lo);
+    font-size: 16px;
+    max-width: 560px;
+    margin-inline: auto;
+    line-height: 1.6;
+  }
+  .subhead strong { color: var(--text-hi); font-weight: 600; }
+
+  .hero-buttons {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-btn {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 15px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--text-hi);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .hero-btn:hover { border-color: var(--pitch); transform: translateY(-1px); }
+  .hero-btn.primary {
+    background: var(--pitch);
+    color: var(--night-deep);
+    border-color: var(--pitch);
+  }
+  .hero-btn.primary:hover { opacity: 0.92; }
+
+  .hist-result-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+  .hist-result-tag.win { background: var(--pitch-dim); color: var(--pitch); }
+  .hist-result-tag.loss { background: rgba(240,101,62,0.12); color: var(--away); }
+
+  .hist-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 130px 90px;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--panel-line);
+    font-size: 13px;
+  }
+  .hist-row:last-child { border-bottom: none; }
+  .hist-row.header-row {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-lo);
+    padding-bottom: 10px;
+  }
+  .hist-date { color: var(--text-lo); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .hist-match { display: flex; align-items: center; gap: 8px; }
+  .hist-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text-hi);
+  }
+  .hist-pick { color: var(--text-lo); font-size: 12px; }
+  .hist-table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  @media (max-width: 560px) {
+    .hist-row { grid-template-columns: 50px 1fr 70px; font-size: 12px; }
+    .hist-pick { display: none; }
+  }
+
+  /* ---------- methodology strip ---------- */
+  .stat-strip {
+    position: relative; z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 760px;
+    margin: 40px auto 0;
+    border-top: 1px solid var(--panel-line);
+    border-bottom: 1px solid var(--panel-line);
+  }
+  .stat-strip .stat {
+    flex: 1;
+    text-align: center;
+    padding: 18px 12px;
+    border-right: 1px solid var(--panel-line);
+  }
+  .stat-strip .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--pitch);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-lo);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  /* ---------- controls ---------- */
+  .controls {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 48px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .day-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--text-lo);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .day-pill:hover { border-color: var(--pitch); color: var(--text-hi); }
+  .day-pill.active {
+    background: var(--pitch);
+    border-color: var(--pitch);
+    color: var(--night-deep);
+    font-weight: 700;
+  }
+
+  /* ---------- match grid ---------- */
+  main {
+    position: relative; z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .day-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 28px 0 6px;
+    color: var(--text-lo);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .day-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--panel-line);
+  }
+  .day-divider:first-child { margin-top: 0; }
+
+  .match-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .match-card:hover { border-color: #2e3a4d; }
+
+  .match-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .match-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-lo);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .favorite-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: var(--pitch-dim);
+    color: var(--pitch);
+    font-weight: 700;
+  }
+  .favorite-tag.tight {
+    background: rgba(100,116,139,0.15);
+    color: var(--draw);
+  }
+
+  .teams-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .team.away { flex-direction: row-reverse; text-align: right; justify-content: flex-start; }
+  .team img {
+    width: 30px;
+    height: 22px;
+    object-fit: cover;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .flag-emoji {
+    font-size: 26px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .flag-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--night-deep);
+    background: var(--text-hi);
+    padding: 4px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+  .team-name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .vs {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-lo);
+    font-size: 12px;
+  }
+
+  /* ---------- probability scoreboard bar ---------- */
+  .prob-bar {
+    display: flex;
+    height: 34px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--night-deep);
+    position: relative;
+  }
+  .seg {
+    position: relative;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+  .seg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px,
+      transparent 1px, transparent 7px
+    );
+  }
+  .seg-home { background: var(--pitch); color: var(--night-deep); }
+  .seg-draw { background: var(--draw); color: #fff; }
+  .seg-away { background: var(--away); color: var(--night-deep); }
+
+  .prob-labels {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .prob-labels .l, .prob-labels .r, .prob-labels .c {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .prob-labels .l { align-items: flex-start; }
+  .prob-labels .c { align-items: center; }
+  .prob-labels .r { align-items: flex-end; }
+  .prob-pct {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .prob-labels .l .prob-pct { color: var(--pitch); }
+  .prob-labels .c .prob-pct { color: var(--draw); }
+  .prob-labels .r .prob-pct { color: var(--away); }
+  .prob-tag {
+    font-size: 11px;
+    color: var(--text-lo);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- top scores ---------- */
+  .scores-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--panel-line);
+  }
+  .scores-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-lo);
+    margin-bottom: 10px;
+  }
+  .scores-row {
+    display: flex;
+    gap: 10px;
+  }
+  .score-chip {
+    flex: 1;
+    background: var(--night-deep);
+    border: 1px solid var(--panel-line);
+    border-radius: 9px;
+    padding: 10px 8px;
+    text-align: center;
+    position: relative;
+  }
+  .score-chip.rank-1 {
+    border-color: var(--amber);
+    background: linear-gradient(180deg, rgba(251,191,36,0.08), transparent);
+  }
+  .score-chip .rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-lo);
+    letter-spacing: 0.06em;
+  }
+  .score-chip.rank-1 .rank { color: var(--amber); }
+  .score-chip .scoreline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-hi);
+    margin: 4px 0 2px;
+  }
+  .score-chip .scoreprob {
+    font-size: 11px;
+    color: var(--text-lo);
+  }
+
+  /* ---------- section tabs ---------- */
+  .section-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    max-width: 600px;
+    margin: 0 auto 8px;
+    padding: 0 24px;
+  }
+  .section-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--panel-line);
+    background: var(--panel);
+    color: var(--text-lo);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .section-tab.active {
+    border-color: var(--pitch);
+    color: var(--pitch);
+    background: var(--pitch-dim);
+  }
+
+  /* ---------- picks vs market ---------- */
+  .pick-disclaimer {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 14px 18px;
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text-lo);
+    line-height: 1.6;
+    text-align: center;
+  }
+  .pick-disclaimer strong { color: var(--amber); }
+
+  .pick-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+  .pick-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+  .pick-card-title {
+    font-weight: 700;
+    font-size: 17px;
+  }
+  .gap-warning {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    background: rgba(240,101,62,0.12);
+    color: var(--away);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .market-row {
+    margin-bottom: 16px;
+  }
+  .market-label {
+    font-size: 12px;
+    color: var(--text-lo);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .compare-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .compare-bar-row {
+    display: grid;
+    grid-template-columns: 70px 1fr 50px;
+    align-items: center;
+    gap: 10px;
+  }
+  .compare-bar-name {
+    font-size: 12px;
+    color: var(--text-lo);
+  }
+  .compare-bar-track {
+    height: 18px;
+    background: var(--night-deep);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+  }
+  .compare-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+  }
+  .compare-bar-fill.model { background: var(--pitch); }
+  .compare-bar-fill.market { background: var(--amber); }
+  .compare-bar-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .legend-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-size: 12px;
+    color: var(--text-lo);
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .legend-dot.model { background: var(--pitch); }
+  .legend-dot.market { background: var(--amber); }
+
+  /* ---------- auth screen ---------- */
+  .auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--night);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-box {
+    width: 100%;
+    max-width: 380px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 16px;
+    padding: 36px 32px;
+  }
+  .auth-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pitch);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .auth-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 28px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .auth-field {
+    margin-bottom: 16px;
+  }
+  .auth-field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-lo);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .auth-field input {
+    width: 100%;
+    background: var(--night-deep);
+    border: 1px solid var(--panel-line);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text-hi);
+    font-size: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .auth-field input:focus { border-color: var(--pitch); }
+
+  .auth-error {
+    background: rgba(240,101,62,0.1);
+    border: 1px solid rgba(240,101,62,0.3);
+    color: var(--away);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .auth-submit {
+    width: 100%;
+    background: var(--pitch);
+    color: var(--night-deep);
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: opacity 0.15s ease;
+  }
+  .auth-submit:hover { opacity: 0.9; }
+
+  .auth-switch {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-lo);
+  }
+  .auth-switch a {
+    color: var(--pitch);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* ---------- user bar ---------- */
+  .user-bar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 999px;
+    padding: 6px 8px 6px 14px;
+  }
+  .user-bar-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-hi);
+  }
+  .user-bar-logout {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--night-deep);
+    border: 1px solid var(--panel-line);
+    color: var(--text-lo);
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .user-bar-logout:hover { color: var(--away); border-color: var(--away); }
+
+  .app-content { display: none; }
+
+  /* ---------- footer ---------- */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--panel-line);
+    padding: 36px 24px 50px;
+    text-align: center;
+    color: var(--text-lo);
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  footer a { color: var(--pitch); text-decoration: none; }
+
+  @media (max-width: 560px) {
+    .team-name { font-size: 14px; }
+    .team img { width: 24px; height: 18px; }
+    .stat-strip { flex-wrap: wrap; }
+    .stat-strip .stat { flex: 1 1 33%; border-bottom: 1px solid var(--panel-line); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .seg { transition: none; }
+    .eyebrow::before { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-field"></div>
+
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-eyebrow">Mundial 2026</div>
+    <div class="auth-title" id="authTitle">Iniciar sesión</div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <div id="registerFields" style="display:none;">
+      <div class="auth-field">
+        <label>Nombre</label>
+        <input type="text" id="regName" placeholder="Tu nombre">
+      </div>
+    </div>
+
+    <div class="auth-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="authEmail" placeholder="tu@correo.com">
+    </div>
+    <div class="auth-field">
+      <label>Contraseña</label>
+      <input type="password" id="authPassword" placeholder="••••••••">
+    </div>
+
+    <button class="auth-submit" id="authSubmitBtn" onclick="handleAuthSubmit()">Entrar</button>
+
+    <div class="auth-switch">
+      <span id="authSwitchText">¿No tienes cuenta?</span>
+      <a id="authSwitchLink" onclick="toggleAuthMode()">Regístrate</a>
+    </div>
+  </div>
+</div>
+
+<div class="user-bar" id="userBar" style="display:none;">
+  <span class="user-bar-name" id="userBarName"></span>
+  <button class="user-bar-logout" onclick="logout()">Salir</button>
+</div>
+
+<div class="app-content" id="appContent">
+<header>
+  <div class="eyebrow">Mundial 2026 · En vivo</div>
+  <h1>Picks con<br><span class="accent">modelo</span>, no corazonadas</h1>
+  <p class="subhead">
+    Un modelo entrenado con <strong>casi 50,000 partidos internacionales desde 1872</strong>
+    calcula la probabilidad real de victoria, empate o derrota para cada cruce del Mundial.
+    Todo público: lo que dijo el modelo, y si acertó o no.
+  </p>
+  <div class="hero-buttons">
+    <button class="hero-btn primary" onclick="showSection('today')">Ver partidos de hoy</button>
+    <button class="hero-btn" onclick="showSection('historial')">Ver historial completo</button>
+  </div>
+</header>
+
+<div class="stat-strip" id="heroStats"></div>
+
+<div class="section-tabs">
+  <div class="section-tab active" id="tabToday" onclick="showSection('today')">Hoy</div>
+  <div class="section-tab" id="tabHistorial" onclick="showSection('historial')">Historial</div>
+  <div class="section-tab" id="tabPicks" onclick="showSection('picks')">Picks vs casas de apuestas</div>
+</div>
+
+<div class="controls" id="dayControls"></div>
+
+<main id="matchList"></main>
+
+<main id="picksList" style="display:none;"></main>
+
+<main id="historialList" style="display:none;"></main>
+
+<footer>
+  Predicciones generadas por un modelo de Gradient Boosting entrenado con rating Elo propio,
+  forma reciente y head-to-head histórico. Las probabilidades reflejan incertidumbre real del modelo,
+  no certezas — el fútbol siempre puede sorprender.
+</footer>
+
+</div>
+
+
+<script>
+const APP_DATA = {"predictions": [{"date": "2026-06-22", "home_team": "Jordan", "away_team": "Algeria", "city": "Santa Clara", "p_home_win": 0.21, "p_draw": 0.214, "p_away_win": 0.575, "top1_score": "0-1", "top1_prob": 0.115, "top2_score": "1-1", "top2_prob": 0.115, "top3_score": "0-2", "top3_prob": 0.097}, {"date": "2026-06-22", "home_team": "Argentina", "away_team": "Austria", "city": "Arlington", "p_home_win": 0.734, "p_draw": 0.173, "p_away_win": 0.094, "top1_score": "2-0", "top1_prob": 0.148, "top2_score": "1-0", "top2_prob": 0.135, "top3_score": "3-0", "top3_prob": 0.108}, {"date": "2026-06-22", "home_team": "Norway", "away_team": "Senegal", "city": "East Rutherford", "p_home_win": 0.46, "p_draw": 0.267, "p_away_win": 0.273, "top1_score": "1-1", "top1_prob": 0.118, "top2_score": "1-0", "top2_prob": 0.109, "top3_score": "2-1", "top3_prob": 0.095}, {"date": "2026-06-22", "home_team": "France", "away_team": "Iraq", "city": "Philadelphia", "p_home_win": 0.723, "p_draw": 0.226, "p_away_win": 0.051, "top1_score": "2-0", "top1_prob": 0.218, "top2_score": "3-0", "top2_prob": 0.185, "top3_score": "1-0", "top3_prob": 0.172}, {"date": "2026-06-23", "home_team": "Portugal", "away_team": "Uzbekistan", "city": "Houston", "p_home_win": 0.669, "p_draw": 0.215, "p_away_win": 0.117, "top1_score": "2-0", "top1_prob": 0.134, "top2_score": "1-0", "top2_prob": 0.129, "top3_score": "2-1", "top3_prob": 0.094}, {"date": "2026-06-23", "home_team": "Colombia", "away_team": "DR Congo", "city": "Zapopan", "p_home_win": 0.677, "p_draw": 0.209, "p_away_win": 0.114, "top1_score": "2-0", "top1_prob": 0.167, "top2_score": "1-0", "top2_prob": 0.154, "top3_score": "3-0", "top3_prob": 0.12}, {"date": "2026-06-23", "home_team": "England", "away_team": "Ghana", "city": "Foxborough", "p_home_win": 0.777, "p_draw": 0.162, "p_away_win": 0.06, "top1_score": "2-0", "top1_prob": 0.216, "top2_score": "3-0", "top2_prob": 0.183, "top3_score": "1-0", "top3_prob": 0.17}, {"date": "2026-06-23", "home_team": "Panama", "away_team": "Croatia", "city": "Toronto", "p_home_win": 0.26, "p_draw": 0.262, "p_away_win": 0.478, "top1_score": "0-1", "top1_prob": 0.114, "top2_score": "1-1", "top2_prob": 0.111, "top3_score": "0-2", "top3_prob": 0.101}, {"date": "2026-06-24", "home_team": "Morocco", "away_team": "Haiti", "city": "Atlanta", "p_home_win": 0.668, "p_draw": 0.277, "p_away_win": 0.054, "top1_score": "2-0", "top1_prob": 0.175, "top2_score": "1-0", "top2_prob": 0.151, "top3_score": "3-0", "top3_prob": 0.135}, {"date": "2026-06-24", "home_team": "Bosnia and Herzegovina", "away_team": "Qatar", "city": "Seattle", "p_home_win": 0.51, "p_draw": 0.189, "p_away_win": 0.301, "top1_score": "1-1", "top1_prob": 0.119, "top2_score": "1-0", "top2_prob": 0.101, "top3_score": "2-1", "top3_prob": 0.093}, {"date": "2026-06-24", "home_team": "Canada", "away_team": "Switzerland", "city": "Vancouver", "p_home_win": 0.464, "p_draw": 0.271, "p_away_win": 0.265, "top1_score": "1-1", "top1_prob": 0.121, "top2_score": "1-0", "top2_prob": 0.09, "top3_score": "0-1", "top3_prob": 0.087}, {"date": "2026-06-24", "home_team": "Scotland", "away_team": "Brazil", "city": "Miami Gardens", "p_home_win": 0.147, "p_draw": 0.232, "p_away_win": 0.62, "top1_score": "0-2", "top1_prob": 0.133, "top2_score": "0-1", "top2_prob": 0.13, "top3_score": "1-2", "top3_prob": 0.095}, {"date": "2026-06-24", "home_team": "Mexico", "away_team": "Czech Republic", "city": "Mexico City", "p_home_win": 0.672, "p_draw": 0.22, "p_away_win": 0.108, "top1_score": "2-0", "top1_prob": 0.148, "top2_score": "1-0", "top2_prob": 0.137, "top3_score": "3-0", "top3_prob": 0.107}, {"date": "2026-06-24", "home_team": "South Africa", "away_team": "South Korea", "city": "Guadalupe", "p_home_win": 0.173, "p_draw": 0.236, "p_away_win": 0.591, "top1_score": "0-1", "top1_prob": 0.135, "top2_score": "0-2", "top2_prob": 0.127, "top3_score": "1-1", "top3_prob": 0.102}, {"date": "2026-06-25", "home_team": "Paraguay", "away_team": "Australia", "city": "Santa Clara", "p_home_win": 0.275, "p_draw": 0.245, "p_away_win": 0.48, "top1_score": "1-1", "top1_prob": 0.121, "top2_score": "0-1", "top2_prob": 0.097, "top3_score": "1-2", "top3_prob": 0.09}, {"date": "2026-06-25", "home_team": "Curaçao", "away_team": "Ivory Coast", "city": "Philadelphia", "p_home_win": 0.135, "p_draw": 0.182, "p_away_win": 0.682, "top1_score": "0-2", "top1_prob": 0.134, "top2_score": "0-1", "top2_prob": 0.128, "top3_score": "1-2", "top3_prob": 0.094}, {"date": "2026-06-25", "home_team": "United States", "away_team": "Turkey", "city": "Inglewood", "p_home_win": 0.529, "p_draw": 0.251, "p_away_win": 0.22, "top1_score": "1-0", "top1_prob": 0.111, "top2_score": "1-1", "top2_prob": 0.111, "top3_score": "2-0", "top3_prob": 0.098}, {"date": "2026-06-25", "home_team": "Japan", "away_team": "Sweden", "city": "Arlington", "p_home_win": 0.529, "p_draw": 0.276, "p_away_win": 0.195, "top1_score": "1-0", "top1_prob": 0.119, "top2_score": "2-0", "top2_prob": 0.116, "top3_score": "1-1", "top3_prob": 0.101}, {"date": "2026-06-25", "home_team": "Tunisia", "away_team": "Netherlands", "city": "Kansas City", "p_home_win": 0.082, "p_draw": 0.136, "p_away_win": 0.782, "top1_score": "0-2", "top1_prob": 0.185, "top2_score": "0-1", "top2_prob": 0.154, "top3_score": "0-3", "top3_prob": 0.148}, {"date": "2026-06-25", "home_team": "Ecuador", "away_team": "Germany", "city": "East Rutherford", "p_home_win": 0.27, "p_draw": 0.263, "p_away_win": 0.466, "top1_score": "1-1", "top1_prob": 0.113, "top2_score": "0-1", "top2_prob": 0.104, "top3_score": "1-2", "top3_prob": 0.097}, {"date": "2026-06-26", "home_team": "Uruguay", "away_team": "Spain", "city": "Zapopan", "p_home_win": 0.125, "p_draw": 0.181, "p_away_win": 0.694, "top1_score": "0-2", "top1_prob": 0.144, "top2_score": "0-1", "top2_prob": 0.134, "top3_score": "0-3", "top3_prob": 0.102}, {"date": "2026-06-26", "home_team": "Cape Verde", "away_team": "Saudi Arabia", "city": "Houston", "p_home_win": 0.392, "p_draw": 0.286, "p_away_win": 0.323, "top1_score": "1-1", "top1_prob": 0.124, "top2_score": "0-1", "top2_prob": 0.095, "top3_score": "1-0", "top3_prob": 0.094}, {"date": "2026-06-26", "home_team": "Norway", "away_team": "France", "city": "Foxborough", "p_home_win": 0.231, "p_draw": 0.296, "p_away_win": 0.473, "top1_score": "0-1", "top1_prob": 0.114, "top2_score": "1-1", "top2_prob": 0.109, "top3_score": "0-2", "top3_prob": 0.104}, {"date": "2026-06-26", "home_team": "Egypt", "away_team": "Iran", "city": "Seattle", "p_home_win": 0.319, "p_draw": 0.27, "p_away_win": 0.412, "top1_score": "1-1", "top1_prob": 0.122, "top2_score": "0-1", "top2_prob": 0.097, "top3_score": "1-2", "top3_prob": 0.088}, {"date": "2026-06-26", "home_team": "New Zealand", "away_team": "Belgium", "city": "Vancouver", "p_home_win": 0.173, "p_draw": 0.209, "p_away_win": 0.618, "top1_score": "0-2", "top1_prob": 0.121, "top2_score": "0-1", "top2_prob": 0.119, "top3_score": "1-2", "top3_prob": 0.097}, {"date": "2026-06-26", "home_team": "Senegal", "away_team": "Iraq", "city": "Toronto", "p_home_win": 0.616, "p_draw": 0.244, "p_away_win": 0.141, "top1_score": "1-0", "top1_prob": 0.131, "top2_score": "2-0", "top2_prob": 0.118, "top3_score": "1-1", "top3_prob": 0.107}, {"date": "2026-06-27", "home_team": "Jordan", "away_team": "Argentina", "city": "Arlington", "p_home_win": 0.07, "p_draw": 0.101, "p_away_win": 0.829, "top1_score": "0-2", "top1_prob": 0.214, "top2_score": "0-3", "top2_prob": 0.189, "top3_score": "0-1", "top3_prob": 0.162}, {"date": "2026-06-27", "home_team": "DR Congo", "away_team": "Uzbekistan", "city": "Atlanta", "p_home_win": 0.359, "p_draw": 0.268, "p_away_win": 0.373, "top1_score": "1-1", "top1_prob": 0.122, "top2_score": "0-1", "top2_prob": 0.096, "top3_score": "1-2", "top3_prob": 0.088}, {"date": "2026-06-27", "home_team": "Colombia", "away_team": "Portugal", "city": "Miami Gardens", "p_home_win": 0.414, "p_draw": 0.268, "p_away_win": 0.318, "top1_score": "1-1", "top1_prob": 0.122, "top2_score": "1-0", "top2_prob": 0.095, "top3_score": "2-1", "top3_prob": 0.087}, {"date": "2026-06-27", "home_team": "Panama", "away_team": "England", "city": "East Rutherford", "p_home_win": 0.105, "p_draw": 0.179, "p_away_win": 0.715, "top1_score": "0-2", "top1_prob": 0.163, "top2_score": "0-1", "top2_prob": 0.145, "top3_score": "0-3", "top3_prob": 0.122}, {"date": "2026-06-27", "home_team": "Algeria", "away_team": "Austria", "city": "Kansas City", "p_home_win": 0.269, "p_draw": 0.255, "p_away_win": 0.476, "top1_score": "1-1", "top1_prob": 0.119, "top2_score": "0-1", "top2_prob": 0.096, "top3_score": "1-2", "top3_prob": 0.091}, {"date": "2026-06-27", "home_team": "Croatia", "away_team": "Ghana", "city": "Philadelphia", "p_home_win": 0.681, "p_draw": 0.222, "p_away_win": 0.097, "top1_score": "2-0", "top1_prob": 0.142, "top2_score": "1-0", "top2_prob": 0.137, "top3_score": "3-0", "top3_prob": 0.098}], "emoji": {"Algeria": "🇩🇿", "Argentina": "🇦🇷", "Australia": "🇦🇺", "Austria": "🇦🇹", "Belgium": "🇧🇪", "Bosnia and Herzegovina": "🇧🇦", "Brazil": "🇧🇷", "Canada": "🇨🇦", "Cape Verde": "🇨🇻", "Colombia": "🇨🇴", "Croatia": "🇭🇷", "Curaçao": "🇨🇼", "Czech Republic": "🇨🇿", "DR Congo": "🇨🇩", "Ecuador": "🇪🇨", "Egypt": "🇪🇬", "England": "🏴", "France": "🇫🇷", "Germany": "🇩🇪", "Ghana": "🇬🇭", "Haiti": "🇭🇹", "Iran": "🇮🇷", "Iraq": "🇮🇶", "Ivory Coast": "🇨🇮", "Japan": "🇯🇵", "Jordan": "🇯🇴", "Mexico": "🇲🇽", "Morocco": "🇲🇦", "Netherlands": "🇳🇱", "New Zealand": "🇳🇿", "Norway": "🇳🇴", "Panama": "🇵🇦", "Paraguay": "🇵🇾", "Portugal": "🇵🇹", "Qatar": "🇶🇦", "Saudi Arabia": "🇸🇦", "Scotland": "🏴", "Senegal": "🇸🇳", "South Africa": "🇿🇦", "South Korea": "🇰🇷", "Spain": "🇪🇸", "Sweden": "🇸🇪", "Switzerland": "🇨🇭", "Tunisia": "🇹🇳", "Turkey": "🇹🇷", "United States": "🇺🇸", "Uruguay": "🇺🇾", "Uzbekistan": "🇺🇿"}, "historial": [{"date": "2026-06-21", "home_team": "Uruguay", "away_team": "Cape Verde", "home_score": 2, "away_score": 2, "p_home_win": 0.676, "p_draw": 0.227, "p_away_win": 0.097, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-21", "home_team": "New Zealand", "away_team": "Egypt", "home_score": 1, "away_score": 3, "p_home_win": 0.265, "p_draw": 0.201, "p_away_win": 0.533, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-21", "home_team": "Belgium", "away_team": "Iran", "home_score": 0, "away_score": 0, "p_home_win": 0.423, "p_draw": 0.277, "p_away_win": 0.3, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-21", "home_team": "Spain", "away_team": "Saudi Arabia", "home_score": 4, "away_score": 0, "p_home_win": 0.805, "p_draw": 0.157, "p_away_win": 0.039, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-20", "home_team": "Tunisia", "away_team": "Japan", "home_score": 0, "away_score": 4, "p_home_win": 0.109, "p_draw": 0.169, "p_away_win": 0.722, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-20", "home_team": "Netherlands", "away_team": "Sweden", "home_score": 5, "away_score": 1, "p_home_win": 0.524, "p_draw": 0.285, "p_away_win": 0.192, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-20", "home_team": "Ecuador", "away_team": "Curaçao", "home_score": 0, "away_score": 0, "p_home_win": 0.778, "p_draw": 0.169, "p_away_win": 0.053, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-20", "home_team": "Germany", "away_team": "Ivory Coast", "home_score": 2, "away_score": 1, "p_home_win": 0.6, "p_draw": 0.246, "p_away_win": 0.154, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-19", "home_team": "Scotland", "away_team": "Morocco", "home_score": 0, "away_score": 1, "p_home_win": 0.214, "p_draw": 0.25, "p_away_win": 0.536, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-19", "home_team": "Brazil", "away_team": "Haiti", "home_score": 3, "away_score": 0, "p_home_win": 0.806, "p_draw": 0.152, "p_away_win": 0.043, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-19", "home_team": "United States", "away_team": "Australia", "home_score": 2, "away_score": 0, "p_home_win": 0.455, "p_draw": 0.222, "p_away_win": 0.323, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-19", "home_team": "Turkey", "away_team": "Paraguay", "home_score": 0, "away_score": 1, "p_home_win": 0.454, "p_draw": 0.245, "p_away_win": 0.301, "model_pick": "home_win", "pick_label": "Gana local", "result": "away_win", "result_label": "Gana visitante", "correct": false}, {"date": "2026-06-18", "home_team": "Canada", "away_team": "Qatar", "home_score": 6, "away_score": 0, "p_home_win": 0.772, "p_draw": 0.149, "p_away_win": 0.078, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-18", "home_team": "Switzerland", "away_team": "Bosnia and Herzegovina", "home_score": 4, "away_score": 1, "p_home_win": 0.658, "p_draw": 0.225, "p_away_win": 0.117, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-18", "home_team": "Mexico", "away_team": "South Korea", "home_score": 1, "away_score": 0, "p_home_win": 0.617, "p_draw": 0.236, "p_away_win": 0.147, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-18", "home_team": "Czech Republic", "away_team": "South Africa", "home_score": 1, "away_score": 1, "p_home_win": 0.478, "p_draw": 0.33, "p_away_win": 0.192, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-17", "home_team": "Uzbekistan", "away_team": "Colombia", "home_score": 1, "away_score": 3, "p_home_win": 0.153, "p_draw": 0.218, "p_away_win": 0.63, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-17", "home_team": "Ghana", "away_team": "Panama", "home_score": 1, "away_score": 0, "p_home_win": 0.204, "p_draw": 0.247, "p_away_win": 0.549, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "home_win", "result_label": "Gana local", "correct": false}, {"date": "2026-06-17", "home_team": "England", "away_team": "Croatia", "home_score": 4, "away_score": 2, "p_home_win": 0.508, "p_draw": 0.248, "p_away_win": 0.244, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-17", "home_team": "Portugal", "away_team": "DR Congo", "home_score": 1, "away_score": 1, "p_home_win": 0.684, "p_draw": 0.224, "p_away_win": 0.093, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-16", "home_team": "Argentina", "away_team": "Algeria", "home_score": 3, "away_score": 0, "p_home_win": 0.679, "p_draw": 0.187, "p_away_win": 0.134, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-16", "home_team": "Iraq", "away_team": "Norway", "home_score": 1, "away_score": 4, "p_home_win": 0.151, "p_draw": 0.213, "p_away_win": 0.636, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-16", "home_team": "France", "away_team": "Senegal", "home_score": 3, "away_score": 1, "p_home_win": 0.632, "p_draw": 0.193, "p_away_win": 0.175, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-16", "home_team": "Austria", "away_team": "Jordan", "home_score": 3, "away_score": 1, "p_home_win": 0.547, "p_draw": 0.254, "p_away_win": 0.199, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-15", "home_team": "Spain", "away_team": "Cape Verde", "home_score": 0, "away_score": 0, "p_home_win": 0.681, "p_draw": 0.276, "p_away_win": 0.043, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-15", "home_team": "Iran", "away_team": "New Zealand", "home_score": 2, "away_score": 2, "p_home_win": 0.587, "p_draw": 0.262, "p_away_win": 0.151, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-15", "home_team": "Belgium", "away_team": "Egypt", "home_score": 1, "away_score": 1, "p_home_win": 0.463, "p_draw": 0.265, "p_away_win": 0.272, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-15", "home_team": "Saudi Arabia", "away_team": "Uruguay", "home_score": 1, "away_score": 1, "p_home_win": 0.151, "p_draw": 0.22, "p_away_win": 0.629, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-14", "home_team": "Germany", "away_team": "Curaçao", "home_score": 7, "away_score": 1, "p_home_win": 0.848, "p_draw": 0.099, "p_away_win": 0.053, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-14", "home_team": "Netherlands", "away_team": "Japan", "home_score": 2, "away_score": 2, "p_home_win": 0.441, "p_draw": 0.284, "p_away_win": 0.275, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-14", "home_team": "Sweden", "away_team": "Tunisia", "home_score": 5, "away_score": 1, "p_home_win": 0.471, "p_draw": 0.255, "p_away_win": 0.274, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-14", "home_team": "Ivory Coast", "away_team": "Ecuador", "home_score": 1, "away_score": 0, "p_home_win": 0.227, "p_draw": 0.26, "p_away_win": 0.513, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "home_win", "result_label": "Gana local", "correct": false}, {"date": "2026-06-13", "home_team": "Australia", "away_team": "Turkey", "home_score": 2, "away_score": 0, "p_home_win": 0.303, "p_draw": 0.273, "p_away_win": 0.424, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "home_win", "result_label": "Gana local", "correct": false}, {"date": "2026-06-13", "home_team": "Haiti", "away_team": "Scotland", "home_score": 0, "away_score": 1, "p_home_win": 0.25, "p_draw": 0.267, "p_away_win": 0.483, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "away_win", "result_label": "Gana visitante", "correct": true}, {"date": "2026-06-13", "home_team": "Brazil", "away_team": "Morocco", "home_score": 1, "away_score": 1, "p_home_win": 0.446, "p_draw": 0.268, "p_away_win": 0.286, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-13", "home_team": "Qatar", "away_team": "Switzerland", "home_score": 1, "away_score": 1, "p_home_win": 0.129, "p_draw": 0.228, "p_away_win": 0.643, "model_pick": "away_win", "pick_label": "Gana visitante", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-12", "home_team": "Canada", "away_team": "Bosnia and Herzegovina", "home_score": 1, "away_score": 1, "p_home_win": 0.609, "p_draw": 0.309, "p_away_win": 0.082, "model_pick": "home_win", "pick_label": "Gana local", "result": "draw", "result_label": "Empate", "correct": false}, {"date": "2026-06-12", "home_team": "United States", "away_team": "Paraguay", "home_score": 4, "away_score": 1, "p_home_win": 0.492, "p_draw": 0.267, "p_away_win": 0.24, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-11", "home_team": "Mexico", "away_team": "South Africa", "home_score": 2, "away_score": 0, "p_home_win": 0.779, "p_draw": 0.16, "p_away_win": 0.06, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}, {"date": "2026-06-11", "home_team": "South Korea", "away_team": "Czech Republic", "home_score": 2, "away_score": 1, "p_home_win": 0.414, "p_draw": 0.234, "p_away_win": 0.352, "model_pick": "home_win", "pick_label": "Gana local", "result": "home_win", "result_label": "Gana local", "correct": true}], "histSummary": {"aciertos": 23, "total": 40, "pct": 57.5, "ganados": 23, "perdidos": 17}, "picks": [{"home": "Portugal", "away": "Uzbekistan", "date": "2026-06-23", "model_home_win": 0.692, "market_home_win": 0.613, "model_draw": 0.192, "market_draw": 0.307, "model_away_win": 0.116, "market_away_win": 0.08, "model_over25": 0.526, "market_over25": 0.594, "model_btts_yes": 0.444, "market_btts_yes": null, "ml_home_odds": -200, "ml_draw_odds": 200, "ml_away_odds": 1050, "ou_over_odds": -165.0, "ou_under_odds": 135.0, "btts_no_odds": -208.0, "btts_yes_odds": null, "top1_score": "2-0", "top1_prob": 0.134, "top2_score": "1-0", "top2_prob": 0.129, "top3_score": "2-1", "top3_prob": 0.094}, {"home": "Colombia", "away": "DR Congo", "date": "2026-06-23", "model_home_win": 0.765, "market_home_win": 0.634, "model_draw": 0.167, "market_draw": 0.229, "model_away_win": 0.068, "market_away_win": 0.137, "model_over25": 0.492, "market_over25": 0.422, "model_btts_yes": 0.337, "market_btts_yes": null, "ml_home_odds": -195, "ml_draw_odds": 320, "ml_away_odds": 600, "ou_over_odds": 125.0, "ou_under_odds": -155.0, "btts_no_odds": null, "btts_yes_odds": null, "top1_score": "2-0", "top1_prob": 0.167, "top2_score": "1-0", "top2_prob": 0.154, "top3_score": "3-0", "top3_prob": 0.12}, {"home": "England", "away": "Ghana", "date": "2026-06-23", "model_home_win": 0.888, "market_home_win": 0.642, "model_draw": 0.098, "market_draw": 0.28, "model_away_win": 0.015, "market_away_win": 0.078, "model_over25": 0.506, "market_over25": 0.578, "model_btts_yes": 0.136, "market_btts_yes": null, "ml_home_odds": -450, "ml_draw_odds": 180, "ml_away_odds": 900, "ou_over_odds": -155.0, "ou_under_odds": 125.0, "btts_no_odds": -189.0, "btts_yes_odds": null, "top1_score": "2-0", "top1_prob": 0.216, "top2_score": "3-0", "top2_prob": 0.183, "top3_score": "1-0", "top3_prob": 0.17}, {"home": "Panama", "away": "Croatia", "date": "2026-06-23", "model_home_win": 0.207, "market_home_win": 0.136, "model_draw": 0.234, "market_draw": 0.232, "model_away_win": 0.56, "market_away_win": 0.633, "model_over25": 0.516, "market_over25": null, "model_btts_yes": 0.515, "market_btts_yes": null, "ml_home_odds": 600, "ml_draw_odds": 310, "ml_away_odds": -200, "ou_over_odds": -125.0, "ou_under_odds": null, "btts_no_odds": -133.0, "btts_yes_odds": null, "top1_score": "0-1", "top1_prob": 0.114, "top2_score": "1-1", "top2_prob": 0.111, "top3_score": "0-2", "top3_prob": 0.101}, {"home": "Mexico", "away": "Czech Republic", "date": "2026-06-24", "model_home_win": 0.736, "market_home_win": 0.492, "model_draw": 0.176, "market_draw": 0.246, "model_away_win": 0.088, "market_away_win": 0.262, "model_over25": 0.521, "market_over25": null, "model_btts_yes": 0.399, "market_btts_yes": null, "ml_home_odds": 100, "ml_draw_odds": 300, "ml_away_odds": 275, "ou_over_odds": null, "ou_under_odds": null, "btts_no_odds": null, "btts_yes_odds": null, "top1_score": "2-0", "top1_prob": 0.148, "top2_score": "1-0", "top2_prob": 0.137, "top3_score": "3-0", "top3_prob": 0.107}, {"home": "Scotland", "away": "Brazil", "date": "2026-06-24", "model_home_win": 0.12, "market_home_win": 0.121, "model_draw": 0.196, "market_draw": 0.185, "model_away_win": 0.684, "market_away_win": 0.694, "model_over25": 0.519, "market_over25": 0.529, "model_btts_yes": 0.442, "market_btts_yes": null, "ml_home_odds": 700, "ml_draw_odds": 425, "ml_away_odds": -250, "ou_over_odds": -120.0, "ou_under_odds": 106.0, "btts_no_odds": null, "btts_yes_odds": null, "top1_score": "0-2", "top1_prob": 0.133, "top2_score": "0-1", "top2_prob": 0.13, "top3_score": "1-2", "top3_prob": 0.095}]};
+</script>
+<script>
+const { predictions, emoji, historial, histSummary, picks } = APP_DATA;
+
+function teamFlag(team) {
+  const e = emoji[team];
+  if (team === 'England') return { type: 'badge', text: 'ENG' };
+  if (team === 'Scotland') return { type: 'badge', text: 'SCO' };
+  return { type: 'emoji', text: e || '🏳️' };
+}
+
+function renderFlag(team) {
+  const f = teamFlag(team);
+  if (f.type === 'badge') {
+    return `<span class="flag-badge">${f.text}</span>`;
+  }
+  return `<span class="flag-emoji">${f.text}</span>`;
+}
+
+function favoriteLabel(p) {
+  const max = Math.max(p.p_home_win, p.p_draw, p.p_away_win);
+  if (p.p_draw === max || (max - p.p_draw) < 0.04) {
+    return { text: 'PARTIDO REÑIDO', tight: true };
+  }
+  const team = max === p.p_home_win ? p.home_team : p.away_team;
+  return { text: `${team.toUpperCase()} FAVORITO · ${Math.round(max*100)}%`, tight: false };
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`;
+}
+
+// Agrupar por fecha
+const byDate = {};
+predictions.forEach(p => {
+  (byDate[p.date] = byDate[p.date] || []).push(p);
+});
+const dates = Object.keys(byDate).sort();
+
+// Controles de día
+const controls = document.getElementById('dayControls');
+const allPill = document.createElement('div');
+allPill.className = 'day-pill active';
+allPill.textContent = 'Todos';
+allPill.onclick = () => filterDay(null, allPill);
+controls.appendChild(allPill);
+
+dates.forEach(date => {
+  const pill = document.createElement('div');
+  pill.className = 'day-pill';
+  const d = new Date(date + 'T12:00:00');
+  pill.textContent = `${d.getDate()} jun`;
+  pill.onclick = () => filterDay(date, pill);
+  controls.appendChild(pill);
+});
+
+function filterDay(date, clickedPill) {
+  document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('active'));
+  clickedPill.classList.add('active');
+  render(date);
+}
+
+function render(filterDate) {
+  const main = document.getElementById('matchList');
+  main.innerHTML = '';
+  const datesToShow = filterDate ? [filterDate] : dates;
+
+  datesToShow.forEach(date => {
+    const divider = document.createElement('div');
+    divider.className = 'day-divider';
+    divider.textContent = formatDate(date);
+    main.appendChild(divider);
+
+    byDate[date].forEach(p => {
+      main.appendChild(buildCard(p));
+    });
+  });
+}
+
+function buildCard(p) {
+  const card = document.createElement('div');
+  card.className = 'match-card';
+
+  const fav = favoriteLabel(p);
+  const hPct = Math.round(p.p_home_win * 100);
+  const dPct = Math.round(p.p_draw * 100);
+  const aPct = 100 - hPct - dPct;
+
+  card.innerHTML = `
+    <div class="match-top">
+      <div class="match-meta">${p.city}</div>
+      <div class="favorite-tag ${fav.tight ? 'tight' : ''}">${fav.text}</div>
+    </div>
+    <div class="teams-row">
+      <div class="team home">
+        ${renderFlag(p.home_team)}
+        <span class="team-name">${p.home_team}</span>
+      </div>
+      <div class="vs">VS</div>
+      <div class="team away">
+        ${renderFlag(p.away_team)}
+        <span class="team-name">${p.away_team}</span>
+      </div>
+    </div>
+    <div class="prob-bar">
+      <div class="seg seg-home" style="width:${hPct}%"></div>
+      <div class="seg seg-draw" style="width:${dPct}%"></div>
+      <div class="seg seg-away" style="width:${aPct}%"></div>
+    </div>
+    <div class="prob-labels">
+      <div class="l">
+        <span class="prob-pct">${hPct}%</span>
+        <span class="prob-tag">Gana ${p.home_team}</span>
+      </div>
+      <div class="c">
+        <span class="prob-pct">${dPct}%</span>
+        <span class="prob-tag">Empate</span>
+      </div>
+      <div class="r">
+        <span class="prob-pct">${aPct}%</span>
+        <span class="prob-tag">Gana ${p.away_team}</span>
+      </div>
+    </div>
+    <div class="scores-section">
+      <div class="scores-label">Marcadores más probables</div>
+      <div class="scores-row">
+        ${buildScoreChip(p.top1_score, p.top1_prob, 1)}
+        ${buildScoreChip(p.top2_score, p.top2_prob, 2)}
+        ${buildScoreChip(p.top3_score, p.top3_prob, 3)}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function buildScoreChip(score, prob, rank) {
+  const pct = Math.round(prob * 100);
+  return `
+    <div class="score-chip rank-${rank}">
+      <div class="rank">#${rank}</div>
+      <div class="scoreline">${score}</div>
+      <div class="scoreprob">${pct}%</div>
+    </div>
+  `;
+}
+
+render(null);
+
+function showSection(section) {
+  document.getElementById('tabToday').classList.toggle('active', section === 'today');
+  document.getElementById('tabHistorial').classList.toggle('active', section === 'historial');
+  document.getElementById('tabPicks').classList.toggle('active', section === 'picks');
+
+  document.getElementById('matchList').style.display = section === 'today' ? 'flex' : 'none';
+  document.getElementById('dayControls').style.display = section === 'today' ? 'flex' : 'none';
+  document.getElementById('picksList').style.display = section === 'picks' ? 'block' : 'none';
+  document.getElementById('historialList').style.display = section === 'historial' ? 'block' : 'none';
+
+  if (section === 'picks' && !document.getElementById('picksList').dataset.rendered) {
+    renderPicks();
+    document.getElementById('picksList').dataset.rendered = '1';
+  }
+  if (section === 'historial' && !document.getElementById('historialList').dataset.rendered) {
+    renderHistorial();
+    document.getElementById('historialList').dataset.rendered = '1';
+  }
+  window.scrollTo({ top: document.getElementById('heroStats').offsetTop - 90, behavior: 'smooth' });
+}
+
+function renderHeroStats() {
+  const el = document.getElementById('heroStats');
+  el.innerHTML = `
+    <div class="stat"><div class="stat-num">${histSummary.pct}%</div><div class="stat-label">Aciertos del modelo</div></div>
+    <div class="stat"><div class="stat-num">${histSummary.ganados}-${histSummary.perdidos}</div><div class="stat-label">Ganados · Perdidos</div></div>
+    <div class="stat"><div class="stat-num">${histSummary.total}</div><div class="stat-label">Partidos evaluados</div></div>
+  `;
+}
+renderHeroStats();
+
+function formatDateShort(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${d.getDate()} ${meses[d.getMonth()]}`;
+}
+
+function buildHistRow(h) {
+  const eh = emoji[h.home_team] || '';
+  const ea = emoji[h.away_team] || '';
+  const ok = h.correct;
+  return `
+    <div class="hist-row">
+      <div class="hist-date">${formatDateShort(h.date)}</div>
+      <div class="hist-match">${eh} ${h.home_team} <span class="hist-score">${h.home_score}-${h.away_score}</span> ${h.away_team} ${ea}</div>
+      <div class="hist-pick">Modelo: ${h.pick_label}</div>
+      <div><span class="hist-result-tag ${ok ? 'win' : 'loss'}">${ok ? 'Acertó' : 'Falló'}</span></div>
+    </div>
+  `;
+}
+
+function renderHistorial() {
+  const container = document.getElementById('historialList');
+  const rows = historial.map(buildHistRow).join('');
+  container.innerHTML = `
+    <div class="pick-disclaimer">
+      Esto no se filtra. Cada partido del Mundial 2026 ya jugado aparece aquí con la predicción
+      que el modelo hubiera dado <strong>antes</strong> del partido (usando solo datos disponibles hasta ese momento)
+      y si coincidió con el resultado real. ${histSummary.aciertos} de ${histSummary.total} aciertos (${histSummary.pct}%).
+    </div>
+    <div class="hist-table-wrap">
+      <div class="hist-row header-row">
+        <div>Fecha</div><div>Partido</div><div>Pick del modelo</div><div>Resultado</div>
+      </div>
+      ${rows}
+    </div>
+  `;
+}
+
+function compareBar(label, modelVal, marketVal) {
+  if (modelVal === null || modelVal === undefined) return '';
+  const mPct = Math.round(modelVal * 100);
+  const ktPct = marketVal !== null && marketVal !== undefined ? Math.round(marketVal * 100) : null;
+  return `
+    <div class="compare-bar-row">
+      <div class="compare-bar-name">${label}</div>
+      <div class="compare-bar-track"><div class="compare-bar-fill model" style="width:${mPct}%"></div></div>
+      <div class="compare-bar-pct" style="color:var(--pitch)">${mPct}%</div>
+    </div>
+    ${ktPct !== null ? `
+    <div class="compare-bar-row">
+      <div class="compare-bar-name"></div>
+      <div class="compare-bar-track"><div class="compare-bar-fill market" style="width:${ktPct}%"></div></div>
+      <div class="compare-bar-pct" style="color:var(--amber)">${ktPct}%</div>
+    </div>` : ''}
+  `;
+}
+
+function buildPickCard(p) {
+  const card = document.createElement('div');
+  card.className = 'pick-card';
+
+  const gaps = [
+    Math.abs((p.model_home_win||0) - (p.market_home_win??p.model_home_win)),
+    Math.abs((p.model_draw||0) - (p.market_draw??p.model_draw)),
+    Math.abs((p.model_away_win||0) - (p.market_away_win??p.model_away_win)),
+  ];
+  const maxGap = Math.max(...gaps);
+  const warning = maxGap >= 0.15;
+
+  card.innerHTML = `
+    <div class="pick-card-header">
+      <div class="pick-card-title">${p.home} vs ${p.away}</div>
+      ${warning ? '<div class="gap-warning">Modelo y mercado difieren mucho</div>' : ''}
+    </div>
+    <div class="market-row">
+      <div class="market-label">Resultado (1X2)</div>
+      <div class="compare-bars">
+        ${compareBar('Gana ' + p.home, p.model_home_win, p.market_home_win)}
+        ${compareBar('Empate', p.model_draw, p.market_draw)}
+        ${compareBar('Gana ' + p.away, p.model_away_win, p.market_away_win)}
+      </div>
+    </div>
+    <div class="market-row">
+      <div class="market-label">Más de 2.5 goles</div>
+      <div class="compare-bars">
+        ${compareBar('Over 2.5', p.model_over25, p.market_over25)}
+      </div>
+    </div>
+    <div class="market-row">
+      <div class="market-label">Ambos equipos anotan</div>
+      <div class="compare-bars">
+        ${compareBar('BTTS Sí', p.model_btts_yes, p.market_btts_yes)}
+      </div>
+    </div>
+    <div class="market-row" style="margin-bottom:0;">
+      <div class="market-label">Marcador más probable (modelo)</div>
+      <div class="scores-row">
+        ${buildScoreChip(p.top1_score, p.top1_prob, 1)}
+        ${buildScoreChip(p.top2_score, p.top2_prob, 2)}
+        ${buildScoreChip(p.top3_score, p.top3_prob, 3)}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function renderPicks() {
+  const container = document.getElementById('picksList');
+  container.innerHTML = `
+    <div class="pick-disclaimer">
+      <strong>Esto no es una recomendación de apuesta.</strong> Comparamos la probabilidad de nuestro modelo (verde) contra la probabilidad implícita en las cuotas reales (dorado). Cuando ambas coinciden, hay consenso. Cuando difieren mucho, alguno de los dos —probablemente nuestro modelo, que aún no incorpora lesiones o contexto reciente— se está equivocando. Tú decides qué tanto confiar en cada número.
+    </div>
+    <div class="legend-row">
+      <span><span class="legend-dot model"></span>Nuestro modelo</span>
+      <span><span class="legend-dot market"></span>Casas de apuestas</span>
+    </div>
+  `;
+  picks.forEach(p => container.appendChild(buildPickCard(p)));
+}
+
+// ============ AUTENTICACIÓN ============
+const USERS_KEY = 'wc26_users';
+const SESSION_KEY = 'wc26_session';
+let authMode = 'login';
+
+async function hashPassword(password) {
+  const enc = new TextEncoder().encode(password);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getUsers() {
+  try {
+    return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideAuthError() {
+  document.getElementById('authError').style.display = 'none';
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  hideAuthError();
+  document.getElementById('registerFields').style.display = authMode === 'register' ? 'block' : 'none';
+  document.getElementById('authTitle').textContent = authMode === 'register' ? 'Crear cuenta' : 'Iniciar sesión';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'register' ? 'Crear cuenta' : 'Entrar';
+  document.getElementById('authSwitchText').textContent = authMode === 'register' ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?';
+  document.getElementById('authSwitchLink').textContent = authMode === 'register' ? 'Inicia sesión' : 'Regístrate';
+}
+
+async function handleAuthSubmit() {
+  hideAuthError();
+  const email = document.getElementById('authEmail').value.trim().toLowerCase();
+  const password = document.getElementById('authPassword').value;
+
+  if (!email || !password) {
+    showAuthError('Completa correo y contraseña.');
+    return;
+  }
+  if (!email.includes('@')) {
+    showAuthError('Ingresa un correo válido.');
+    return;
+  }
+
+  const users = getUsers();
+
+  if (authMode === 'register') {
+    const name = document.getElementById('regName').value.trim();
+    if (!name) {
+      showAuthError('Ingresa tu nombre.');
+      return;
+    }
+    if (password.length < 6) {
+      showAuthError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+    if (users[email]) {
+      showAuthError('Ya existe una cuenta con ese correo.');
+      return;
+    }
+    const passwordHash = await hashPassword(password);
+    users[email] = { name, passwordHash };
+    saveUsers(users);
+    startSession(email, name);
+  } else {
+    const user = users[email];
+    if (!user) {
+      showAuthError('No existe una cuenta con ese correo.');
+      return;
+    }
+    const passwordHash = await hashPassword(password);
+    if (passwordHash !== user.passwordHash) {
+      showAuthError('Contraseña incorrecta.');
+      return;
+    }
+    startSession(email, user.name);
+  }
+}
+
+function startSession(email, name) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ email, name }));
+  showApp(name);
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('appContent').style.display = 'none';
+  document.getElementById('userBar').style.display = 'none';
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+}
+
+function showApp(name) {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('appContent').style.display = 'block';
+  document.getElementById('userBar').style.display = 'flex';
+  document.getElementById('userBarName').textContent = name;
+}
+
+function checkSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (session && session.email && session.name) {
+      showApp(session.name);
+    }
+  } catch (e) {
+    // sesión corrupta, se queda en pantalla de login
+  }
+}
+
+document.getElementById('authPassword').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleAuthSubmit();
+});
+
+checkSession();
+
+
+</script>
+
+</body>
+</html>
